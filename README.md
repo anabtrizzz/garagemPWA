@@ -21,7 +21,7 @@ Cálculo automático de valores e prazos de entrega.
 **Interface Progressiva (PWA)**: Design responsivo e escuro (Dark Mode), otimizado para uso em smartphones por mecânicos e gestores;
 
 ## 💻 **Tecnologias Utilizadas**
-C# / .NET 8
+**C# / .NET 8**
 
 **Blazor (Interactive Server/WASM)**
 
