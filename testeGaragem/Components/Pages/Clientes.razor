@@ -1,0 +1,351 @@
+﻿@page "/clientes"
+@layout EmptyLayout
+@rendermode InteractiveServer
+@using testeGaragem.Models
+@using testeGaragem.Services
+@inject GaragemService GaragemService
+@inject NavigationManager Navigation
+
+<div class="app-wrapper">
+    <header class="top-bar">
+        <div class="brand-section">
+            <div class="user-circle">👤</div>
+            <span class="brand-text">GARAGEM 75</span>
+        </div>
+        <div class="notification-icon">🔔 @(listaExibicao.Count)</div>
+    </header>
+
+    <main class="content-body">
+        <h1 class="page-title">Clientes</h1>
+
+        <div class="search-container">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Buscar por nome ou telefone..." @oninput="OnSearch" />
+            </div>
+        </div>
+
+        <div class="clients-list">
+            @foreach (var cliente in listaExibicao)
+            {
+                var classeBorda = cliente.Tipo == "Premium" ? "border-yellow" : 
+                                 cliente.Tipo == "Débito" ? "border-red" : "";
+
+                <div class="client-card @classeBorda">
+                    <div class="card-header">
+                        <div>
+                            <h3>@cliente.Nome</h3>
+                            <span class="phone">@cliente.Telefone</span>
+                        </div>
+                        <span class="badge @cliente.Tipo.ToLower()">@cliente.Tipo.ToUpper()</span>
+                    </div>
+
+                    <div class="card-actions">
+                        @* BOTÃO EDITAR *@
+                        <button class="action-btn" @onclick="() => PrepararEdicao(cliente)">✏️</button>
+                        @* BOTÃO EXCLUIR *@
+                        <button class="action-btn delete" @onclick="() => ConfirmarExclusao(cliente.Id)">🗑️</button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <button class="fab-add" @onclick="AbrirModalNovo">+</button>
+    </main>
+
+    @* MODAL ÚNICO PARA NOVO/EDITAR *@
+    @if (exibirModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>@(isEdicao ? "Editar Cliente" : "Novo Cliente")</h2>
+                    <button class="btn-close" @onclick="FecharModal">✕</button>
+                </div>
+
+                <div class="modal-form">
+                    <div class="form-group">
+                        <label>NOME COMPLETO</label>
+                        <input type="text" @bind="clienteModel.Nome" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>TELEFONE</label>
+                        <input type="text" @bind="clienteModel.Telefone" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>TIPO DE CLIENTE</label>
+                        <select @bind="clienteModel.Tipo">
+                            <option value="Padrão">Padrão</option>
+                            <option value="Premium">Premium</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-save" @onclick="Salvar">
+                        @(isEdicao ? "SALVAR ALTERAÇÕES" : "CADASTRAR CLIENTE")
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <nav class="bottom-nav">
+        <div class="nav-item" @onclick='() => NavTo("dashboard")'><span>📊</span><span>Dashboard</span></div>
+        <div class="nav-item active"><span>👥</span><span>Clientes</span></div>
+        <div class="nav-item" @onclick='() => NavTo("veiculos")'><span>🚗</span><span>Veículos</span></div>
+        <div class="nav-item" @onclick='() => NavTo("pecas")'><span>⚙️</span><span>Peças</span></div>
+        <div class="nav-item" @onclick='() => NavTo("os")'><span>📋</span><span>OS</span></div>
+    </nav>
+</div>
+
+<style>
+    /* RESET BASE */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    .app-wrapper {
+        background-color: #000;
+        min-height: 100vh;
+        color: white;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* HEADER */
+    .top-bar {
+        background-color: #616161;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .brand-section { display: flex; align-items: center; gap: 10px; }
+    .brand-text { color: #FFD700; font-weight: bold; font-size: 1rem; }
+    .user-circle { background: #e0e0e0; width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #333; }
+    .notification-icon { color: white; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.9rem;}
+
+    /* CONTEÚDO PRINCIPAL */
+    .content-body {
+        padding: 20px;
+        flex: 1;
+        padding-bottom: 120px; /* Espaço para o menu inferior e botão + */
+        position: relative;
+    }
+    .page-title { font-size: 1.8rem; margin-bottom: 20px; color: white; }
+
+    /* BUSCA */
+    .search-container { margin-bottom: 25px; }
+    .search-box {
+        background-color: #FFFDE7;
+        border-radius: 30px;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .search-box input {
+        background: transparent;
+        border: none;
+        width: 100%;
+        outline: none;
+        font-size: 0.9rem;
+        color: #555;
+    }
+    .search-icon { color: #888; }
+
+    /* CARDS DE CLIENTE */
+    .clients-list { display: flex; flex-direction: column; gap: 15px; }
+    .client-card {
+        background-color: #70757a;
+        border-radius: 15px;
+        padding: 15px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    .client-card:hover { transform: scale(1.02); }
+    
+    /* Indicadores de Status (Borda Lateral) */
+    .border-yellow { border-left: 6px solid #FFD700; }
+    .border-red { border-left: 6px solid #ff5252; }
+
+    .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .card-header h3 { margin: 0; font-size: 1.1rem; color: white; }
+    .phone { font-size: 0.8rem; color: #d1d1d1; }
+
+    /* Badges Dinâmicos */
+    .badge { font-size: 0.6rem; padding: 3px 8px; border-radius: 10px; font-weight: bold; background: white; color: black;}
+    .badge.premium { background-color: #FFD700; color: #000; }
+    .badge.débito { background-color: #ff5252; color: white; }
+    .badge.padrão { background-color: #ffffff; color: #000; }
+
+    /* Ações do Card (Editar/Excluir) */
+    .card-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+    .action-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #ccc; }
+    .action-btn:hover { color: #FFD700; }
+    .action-btn.delete { color: rgba(255, 82, 82, 0.6); margin-left: 5px;}
+    .action-btn.delete:hover { color: #ff5252; }
+
+    /* BOTÃO FLUTUANTE (+) */
+    .fab-add {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        background-color: #FFD700;
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        border: none;
+        font-size: 2rem;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        cursor: pointer;
+        color: black;
+        display: flex; justify-content: center; align-items: center;
+        z-index: 50;
+    }
+    .fab-add:active { transform: scale(0.95); }
+
+    /* MODAL DE CADASTRO/EDIÇÃO (Bottom Sheet) */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85);
+        display: flex; align-items: flex-end; /* Alinha no rodapé */
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: #1e1e1e;
+        width: 100%;
+        border-radius: 25px 25px 0 0;
+        padding: 30px 25px;
+        color: white;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    .keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .modal-header h2 { margin: 0; font-size: 1.4rem; color: #FFD700; }
+    .btn-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+
+    /* FORMULÁRIO DO MODAL */
+    .modal-form { display: flex; flex-direction: column; gap: 20px; }
+    .form-group { margin-bottom: 0; }
+    .form-group label { display: block; font-size: 0.7rem; color: #aaa; margin-bottom: 8px; font-weight: bold; }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 12px;
+        background: #333;
+        border: 1px solid #444;
+        border-radius: 12px;
+        color: white;
+        font-size: 0.9rem;
+    }
+    .form-group select { appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23AAA%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.4c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095.3c3.6-3.6%205.4-7.8%205.4-12.8%200-5-1.8-9.3-5.4-12.9z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat, repeat; background-position: right 12px top 50%, 0 0; background-size: .65em auto, 100%;}
+
+    .btn-save {
+        width: 100%;
+        padding: 16px;
+        background: #FFD700;
+        color: black;
+        border: none;
+        border-radius: 15px;
+        font-weight: bold;
+        font-size: 1rem;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+    .btn-save:active { transform: scale(0.98); }
+
+    /* MENU INFERIOR */
+    .bottom-nav {
+        position: fixed;
+        bottom: 15px; left: 15px; right: 15px;
+        background-color: #333;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 40;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #999; font-size: 0.65rem; cursor: pointer; gap: 5px;}
+    .nav-item.active {
+        background-color: #FFFDE7;
+        color: #000;
+        padding: 10px 15px;
+        border-radius: 15px;
+        font-weight: bold;
+    }
+</style>
+
+@code {
+    private List<Cliente> listaExibicao = new();
+    private Cliente clienteModel = new();
+    private bool exibirModal = false;
+    private bool isEdicao = false;
+
+    protected override void OnInitialized() => AtualizarLista();
+
+    private void AtualizarLista() => listaExibicao = GaragemService.GetClientes();
+
+    private void AbrirModalNovo()
+    {
+        isEdicao = false;
+        clienteModel = new Cliente { Tipo = "Padrão" };
+        exibirModal = true;
+    }
+
+    private void PrepararEdicao(Cliente cliente)
+    {
+        isEdicao = true;
+        // Criamos uma cópia para não alterar a lista original antes de salvar
+        clienteModel = new Cliente { 
+            Id = cliente.Id, 
+            Nome = cliente.Nome, 
+            Telefone = cliente.Telefone, 
+            Tipo = cliente.Tipo 
+        };
+        exibirModal = true;
+    }
+
+    private void Salvar()
+    {
+        if (string.IsNullOrWhiteSpace(clienteModel.Nome)) return;
+
+        if (isEdicao)
+            GaragemService.AtualizarCliente(clienteModel);
+        else
+            GaragemService.AdicionarCliente(clienteModel);
+
+        AtualizarLista();
+        FecharModal();
+    }
+
+    private void ConfirmarExclusao(int id)
+    {
+        // No futuro você pode colocar um modal de "Tem certeza?"
+        GaragemService.ExcluirCliente(id);
+        AtualizarLista();
+    }
+
+    private void FecharModal() => exibirModal = false;
+    private void NavTo(string path) => Navigation.NavigateTo(path);
+    private void OnSearch(ChangeEventArgs e)
+    {
+        var termo = e.Value?.ToString()?.ToLower() ?? "";
+        listaExibicao = GaragemService.GetClientes()
+            .Where(c => c.Nome.ToLower().Contains(termo)).ToList();
+    }
+}

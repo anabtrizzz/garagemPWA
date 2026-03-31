@@ -1,0 +1,254 @@
+﻿@page "/os"
+@layout EmptyLayout
+@rendermode InteractiveServer
+@using testeGaragem.Models
+@using testeGaragem.Services
+@inject GaragemService GaragemService
+@inject NavigationManager Navigation
+
+<div class="app-wrapper">
+    <header class="top-bar">
+        <div class="brand-section">
+            <div class="user-circle">👤</div>
+            <span class="brand-text">GARAGEM 75</span>
+        </div>
+        <div class="notification-icon">🔔</div>
+    </header>
+
+    <main class="content-body">
+        <p class="section-label">GESTÃO DE FLUXO</p>
+        <h1 class="page-title">Ordens de Serviço</h1>
+
+        <div class="os-grid-stats">
+            <div class="os-stat-card">
+                <small>ABERTAS</small>
+                <h2>@(listaOS.Count(o => o.Status == "Aberta"))</h2>
+            </div>
+            <div class="os-stat-card border-yellow">
+                <small>PREVISÃO HOJE</small>
+                @* Correção da lógica de contagem *@
+                <h2>@(listaOS.Count(o => o.DataEntrega.Date == DateTime.Today))</h2>
+            </div>
+        </div>
+
+        <div class="actions-bar">
+            <button class="btn-new-os" @onclick="AbrirModalNovo">+ Nova Ordem de Serviço</button>
+        </div>
+
+        <div class="os-list">
+            @foreach (var os in listaOS)
+            {
+                <div class="os-card">
+                    <div class="os-card-header">
+                        <span class="os-number">NÚMERO @os.NumeroOS</span>
+                        <span class="os-date">📅 Entrega: @os.DataEntrega.ToString("dd/MM")</span>
+                    </div>
+                    
+                    <div class="os-details">
+                        <p><strong>🚗 @(os.Veiculo?.MarcaModelo ?? "Veículo")</strong> — @(os.Veiculo?.Placa)</p>
+                        <p class="client-name">👤 @(os.Cliente?.Nome ?? "Cliente")</p>
+                        
+                        <div class="service-box">
+                            <small>SERVIÇO PROGRAMADO:</small>
+                            <p>@os.DescricaoServico</p>
+                        </div>
+                    </div>
+
+                    <div class="os-footer">
+    <div class="status-selector">
+        @* O valor do select está ligado ao status atual da OS *@
+        <select class="status-badge-select @os.Status.Replace(" ", "-").ToLower()"
+                @onchange="@(e => MudarStatus(os.Id, e.Value.ToString()))">
+            <option value="Aberta">ABERTA</option>
+            <option value="Em Progresso">EM PROGRESSO</option>
+            <option value="Finalizada">FINALIZADA</option>
+            <option value="Cancelada">CANCELADA</option>
+        </select>
+    </div>
+
+    <div class="os-price">
+        <small>TOTAL</small>
+        <p>R$ @os.ValorTotal.ToString("N2")</p>
+    </div>
+</div>
+                </div>
+            }
+        </div>
+    </main>
+
+    @if (exibirModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Nova Manutenção</h2>
+                    <button class="btn-close" @onclick="FecharModal">✕</button>
+                </div>
+
+                <div class="modal-form">
+                    <div class="form-group">
+                        <label>VEÍCULO / PLACA</label>
+                        <select @bind="novaOS.VeiculoId">
+                            <option value="0">Selecione...</option>
+                            @foreach (var v in GaragemService.GetVeiculos()) {
+                                <option value="@v.Id">@v.Placa - @v.MarcaModelo</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>O QUE SERÁ FEITO? (DESCRIÇÃO)</label>
+                        <textarea @bind="novaOS.DescricaoServico" rows="2" placeholder="Ex: Troca de pastilhas..."></textarea>
+                    </div>
+
+                    <div class="row-fields">
+                        <div class="form-group flex-1">
+                            <label>PREVISÃO ENTREGA</label>
+                            <input type="date" @bind="novaOS.DataEntrega" @bind:format="yyyy-MM-dd" />
+                        </div>
+                        <div class="form-group flex-1">
+                            <label>VALOR (R$)</label>
+                            <input type="number" @bind="novaOS.ValorTotal" />
+                        </div>
+                    </div>
+
+                    <button class="btn-save" @onclick="Salvar">CRIAR ORDEM DE SERVIÇO</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <nav class="bottom-nav">
+        <div class="nav-item" @onclick='() => NavTo("dashboard")'><span>📊</span><span>Dashboard</span></div>
+        <div class="nav-item" @onclick='() => NavTo("clientes")'><span>👥</span><span>Clientes</span></div>
+        <div class="nav-item" @onclick='() => NavTo("veiculos")'><span>🚗</span><span>Veículos</span></div>
+        <div class="nav-item" @onclick='() => NavTo("pecas")'><span>⚙️</span><span>Peças</span></div>
+        <div class="nav-item active" @onclick='() => NavTo("os")'><span>📋</span><span>OS</span></div>
+    </nav>
+</div>
+
+<style>
+
+    /* HEADER */
+    .top-bar {
+        background-color: #616161;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .brand-section { display: flex; align-items: center; gap: 10px; }
+    .brand-text { color: #FFD700; font-weight: bold; font-size: 1rem; }
+    .user-circle { background: #e0e0e0; width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #333; }
+    .notification-icon { color: white; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.9rem;}
+    .app-wrapper { background-color: #000; min-height: 100vh; color: white; font-family: sans-serif; }
+    .top-bar { background-color: #616161; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+    .brand-text { color: #FFD700; font-weight: bold; }
+    .content-body { padding: 20px; padding-bottom: 120px; }
+    .section-label { font-size: 0.6rem; color: #aaa; letter-spacing: 1px; }
+    
+    .os-grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+    .os-stat-card { background: #f0f4f8; color: black; padding: 15px; border-radius: 12px; }
+    .os-stat-card.border-yellow { border-right: 5px solid #FFD700; }
+    .os-stat-card h2 { font-size: 1.8rem; margin: 0; }
+
+    .btn-new-os { width: 100%; background: #FFD700; color: black; border: none; padding: 12px; border-radius: 20px; font-weight: bold; margin-bottom: 20px; }
+
+    .os-card { background: #333; border-radius: 15px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #FFD700; }
+    .os-card-header { display: flex; justify-content: space-between; font-size: 0.7rem; color: #aaa; margin-bottom: 10px; }
+    
+    .service-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-top: 10px; }
+    .service-box small { color: #FFD700; font-size: 0.6rem; font-weight: bold; }
+    .service-box p { font-size: 0.8rem; margin: 0; color: #eee; }
+
+    .status-badge { padding: 4px 10px; border-radius: 10px; font-size: 0.6rem; font-weight: bold; }
+    .status-badge.aberta { background: #FFD700; color: black; }
+    
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: flex-end; z-index: 100; }
+    .modal-content { background: #1a1a1a; width: 100%; padding: 25px; border-radius: 20px 20px 0 0; }
+    .row-fields { display: flex; gap: 10px; }
+    .flex-1 { flex: 1; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.65rem; color: #aaa; margin-bottom: 4px; }
+    .form-group input, .form-group select, .modal-form textarea { width: 100%; background: #222; border: 1px solid #444; border-radius: 8px; color: white; padding: 10px; }
+    .btn-save { width: 100%; padding: 15px; background: #FFD700; border: none; border-radius: 10px; font-weight: bold; margin-top: 15px; }
+
+    .bottom-nav {
+        position: fixed;
+        bottom: 15px; left: 15px; right: 15px;
+        background-color: #333;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 40;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #999; font-size: 0.65rem; cursor: pointer; gap: 5px;}
+    .nav-item.active {
+        background-color: #FFFDE7;
+        color: #000;
+        padding: 10px 15px;
+        border-radius: 15px;
+        font-weight: bold;
+    }
+
+    /* Estilo do Seletor de Status */
+    .status-badge-select {
+    border: none;
+    border-radius: 10px;
+    padding: 5px 10px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+    appearance: none; /* Remove a setinha padrão do navegador */
+    text-align: center;
+    }
+
+    /* Cores por Status */
+    .status-badge-select.aberta { background: #FFD700; color: black; }
+    .status-badge-select.em-progresso { background: #007bff; color: white; }
+    .status-badge-select.finalizada { background: #28a745; color: white; }
+    .status-badge-select.cancelada { background: #dc3545; color: white; }
+
+    .os-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    }
+
+</style>
+
+@code {
+    // Usando o caminho completo para evitar o erro de conflito de nomes
+    private List<testeGaragem.Models.OrdemServico> listaOS = new();
+    private testeGaragem.Models.OrdemServico novaOS = new();
+    private bool exibirModal = false;
+
+    protected override void OnInitialized() => AtualizarLista();
+    private void AtualizarLista() => listaOS = GaragemService.GetOrdensServico();
+    private void AbrirModalNovo() { novaOS = new() { DataEntrega = DateTime.Today.AddDays(1) }; exibirModal = true; }
+    private void FecharModal() => exibirModal = false;
+    private void NavTo(string p) => Navigation.NavigateTo(p);
+
+    private void Salvar() {
+        if (novaOS.VeiculoId > 0) {
+            GaragemService.AdicionarOS(novaOS);
+            AtualizarLista();
+            FecharModal();
+        }
+    }
+
+    private void MudarStatus(int id, string novoStatus)
+{
+    GaragemService.AtualizarStatus(id, novoStatus);
+    AtualizarLista(); // Recarrega a tela para atualizar os contadores do topo
+}
+
+}

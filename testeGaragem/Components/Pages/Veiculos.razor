@@ -1,0 +1,223 @@
+﻿@page "/veiculos"
+@layout EmptyLayout
+@rendermode InteractiveServer
+@using testeGaragem.Models
+@using testeGaragem.Services
+@inject GaragemService GaragemService
+@inject NavigationManager Navigation
+
+<div class="app-wrapper">
+    <header class="top-bar">
+        <div class="brand-section">
+            <div class="user-circle">👤</div>
+            <span class="brand-text">GARAGEM 75</span>
+        </div>
+        <div class="notification-icon">🔔</div>
+    </header>
+
+    <main class="content-body">
+        <h1 class="page-title">Veículos</h1>
+
+        <div class="stat-card">
+            <span class="card-label">TOTAL DE VEÍCULOS</span>
+            <h2 class="card-value">@listaVeiculos.Count</h2>
+        </div>
+
+        <div class="featured-vehicles">
+            <h3>Veículos Cadastrados</h3>
+            <div class="vehicle-grid">
+                @foreach (var v in listaVeiculos)
+                {
+                    <div class="vehicle-carousel-card">
+                        <div class="car-thumb">🚗</div>
+                        <div class="vehicle-details">
+                            <h4>@v.MarcaModelo</h4>
+                            <span class="plate">@v.Placa</span>
+                            <p class="owner">Dono: @(v.Proprietario?.Nome ?? "N/A")</p>
+                            <div class="card-actions">
+                                <button class="action-btn" @onclick="() => PrepararEdicao(v)">✏️</button>
+                                <button class="action-btn delete" @onclick="() => Excluir(v.Id)">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <button class="fab-add" @onclick="AbrirModalNovo">+</button>
+    </main>
+
+    @* MODAL DE VEÍCULO *@
+    @if (exibirModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>@(isEdicao ? "Editar Veículo" : "Novo Veículo")</h2>
+                    <button class="btn-close" @onclick="FecharModal">✕</button>
+                </div>
+
+                <div class="modal-form">
+                    <div class="form-group">
+                        <label>MARCA / MODELO</label>
+                        <input type="text" @bind="veiculoModel.MarcaModelo" placeholder="Ex: Honda Civic" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>PLACA</label>
+                        <input type="text" @bind="veiculoModel.Placa" placeholder="ABC-1234" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>PROPRIETÁRIO</label>
+                        <select @bind="veiculoModel.ClienteId">
+                            <option value="0">Selecione um cliente...</option>
+                            @foreach (var cliente in GaragemService.GetClientes())
+                            {
+                                <option value="@cliente.Id">@cliente.Nome</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button class="btn-save" @onclick="Salvar">
+                        @(isEdicao ? "SALVAR ALTERAÇÕES" : "CADASTRAR VEÍCULO")
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <nav class="bottom-nav">
+        <div class="nav-item" @onclick='() => NavTo("dashboard")'><span>📊</span><span>Dashboard</span></div>
+        <div class="nav-item" @onclick='() => NavTo("clientes")'><span>👥</span><span>Clientes</span></div>
+        <div class="nav-item active"><span>🚗</span><span>Veículos</span></div>
+        <div class="nav-item" @onclick='() => NavTo("pecas")'><span>⚙️</span><span>Peças</span></div>
+        <div class="nav-item" @onclick='() => NavTo("os")'><span>📋</span><span>OS</span></div>
+    </nav>
+</div>
+
+<style>
+     .app-wrapper {
+        background-color: #000;
+        min-height: 100vh;
+        color: white;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* HEADER */
+    .top-bar {
+        background-color: #616161;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .brand-section { display: flex; align-items: center; gap: 10px; }
+    .brand-text { color: #FFD700; font-weight: bold; font-size: 1rem; }
+    .user-circle { background: #e0e0e0; width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #333; }
+    .notification-icon { color: white; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.9rem;}
+
+    /* Reaproveitando os estilos do Clientes.razor */
+    .app-wrapper { background-color: #000; min-height: 100vh; color: white; font-family: sans-serif; display: flex; flex-direction: column; }
+    .top-bar { background-color: #616161; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+    .brand-text { color: #FFD700; font-weight: bold; }
+    .content-body { padding: 20px; flex: 1; padding-bottom: 120px; }
+    .stat-card { background-color: #70757a; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+    .card-value { font-size: 2.2rem; color: #FFD700; font-weight: bold; }
+    
+    .vehicle-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+    .vehicle-carousel-card { background-color: white; color: black; border-radius: 15px; padding: 15px; display: flex; gap: 15px; align-items: center; }
+    .car-thumb { font-size: 2rem; background: #eee; padding: 10px; border-radius: 10px; }
+    .plate { background: #FFFDE7; font-size: 0.7rem; padding: 2px 5px; font-weight: bold; border-radius: 4px; }
+    .owner { font-size: 0.8rem; color: #666; margin-top: 5px; }
+    
+    .card-actions { margin-top: 10px; display: flex; gap: 10px; }
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+    .action-btn.delete { color: #ff5252; }
+
+    /* Modal Styles */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: flex-end; z-index: 1000; }
+    .modal-content { background: #1e1e1e; width: 100%; border-radius: 25px 25px 0 0; padding: 30px 25px; animation: slideUp 0.3s; }
+    @@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-header h2 { color: #FFD700; margin: 0; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.7rem; color: #aaa; margin-bottom: 5px; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; background: #333; border: 1px solid #444; border-radius: 10px; color: white; }
+    .btn-save { width: 100%; padding: 15px; background: #FFD700; border: none; border-radius: 15px; font-weight: bold; margin-top: 10px; }
+    .fab-add { position: fixed; bottom: 100px; right: 20px; background: #FFD700; width: 55px; height: 55px; border-radius: 50%; border: none; font-size: 2rem; font-weight: bold; z-index: 100; }
+    .bottom-nav {
+        position: fixed;
+        bottom: 15px; left: 15px; right: 15px;
+        background-color: #333;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 40;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #999; font-size: 0.65rem; cursor: pointer; gap: 5px;}
+    .nav-item.active {
+        background-color: #FFFDE7;
+        color: #000;
+        padding: 10px 15px;
+        border-radius: 15px;
+        font-weight: bold;
+    }
+</style>
+
+@code {
+    private List<Veiculo> listaVeiculos = new();
+    private Veiculo veiculoModel = new();
+    private bool exibirModal = false;
+    private bool isEdicao = false;
+
+    protected override void OnInitialized() => AtualizarLista();
+
+    private void AtualizarLista() => listaVeiculos = GaragemService.GetVeiculos();
+
+    private void AbrirModalNovo()
+    {
+        isEdicao = false;
+        veiculoModel = new Veiculo();
+        exibirModal = true;
+    }
+
+    private void PrepararEdicao(Veiculo v)
+    {
+        isEdicao = true;
+        veiculoModel = new Veiculo { 
+            Id = v.Id, 
+            MarcaModelo = v.MarcaModelo, 
+            Placa = v.Placa, 
+            ClienteId = v.ClienteId 
+        };
+        exibirModal = true;
+    }
+
+    private void Salvar()
+    {
+        if (isEdicao)
+            GaragemService.AtualizarVeiculo(veiculoModel);
+        else
+            GaragemService.AdicionarVeiculo(veiculoModel);
+
+        AtualizarLista();
+        FecharModal();
+    }
+
+    private void Excluir(int id)
+    {
+        GaragemService.ExcluirVeiculo(id);
+        AtualizarLista();
+    }
+
+    private void FecharModal() => exibirModal = false;
+    private void NavTo(string path) => Navigation.NavigateTo(path);
+}

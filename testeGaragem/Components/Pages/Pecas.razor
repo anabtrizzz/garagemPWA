@@ -1,0 +1,231 @@
+﻿@page "/pecas"
+@layout EmptyLayout
+@rendermode InteractiveServer
+@using testeGaragem.Models
+@using testeGaragem.Services
+@inject GaragemService GaragemService
+@inject NavigationManager Navigation
+
+<div class="app-wrapper">
+    <header class="top-bar">
+        <div class="brand-section">
+            <div class="user-circle">👤</div>
+            <span class="brand-text">GARAGEM 75</span>
+        </div>
+        <div class="notification-icon">🔔</div>
+    </header>
+
+    <main class="content-body">
+        <h1 class="page-title">Inventário de Peças</h1>
+        
+        <div class="inventory-stats">
+            <div class="stat-box">
+                <small>TOTAL EM ESTOQUE</small>
+                <h2>@listaPecas.Sum(p => p.QuantidadeEstoque) <span>unidades</span></h2>
+            </div>
+            <div class="stat-box warning">
+                <small>ITENS CRÍTICOS</small>
+                <h2>@listaPecas.Count(p => p.QuantidadeEstoque < 5) ⚠️</h2>
+            </div>
+        </div>
+
+        <button class="btn-new-item" @onclick="AbrirModalNovo">
+            <span>+</span> Cadastrar Nova Peça
+        </button>
+
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Buscar por nome, código ou fabricante..." @oninput="OnSearch" />
+        </div>
+
+        <div class="pecas-list">
+            @foreach (var peca in listaExibicao)
+            {
+                bool estoqueBaixo = peca.QuantidadeEstoque < 10;
+                <div class="peca-card @(estoqueBaixo ? "low-stock" : "")">
+                    <div class="peca-header">
+                        <span class="nota">@peca.Nota</span>
+                        @if (estoqueBaixo) { <span class="badge-status">ESTOQUE BAIXO</span> }
+                    </div>
+                    <h3>@peca.Nome</h3>
+                    <div class="peca-info">
+                        <span class="price">R$ @peca.PrecoVenda.ToString("N2")</span>
+                        <span class="qty">@peca.QuantidadeEstoque.ToString("D2") ●</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: @(peca.QuantidadeEstoque > 100 ? 100 : peca.QuantidadeEstoque)%"></div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="action-btn" @onclick="() => PrepararEdicao(peca)">✏️</button>
+                        <button class="action-btn delete" @onclick="() => Excluir(peca.Id)">🗑️</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </main>
+
+    @* MODAL DE PEÇA *@
+    @if (exibirModal)
+    {
+        <div class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>@(isEdicao ? "Editar Peça" : "Nova Peça")</h2>
+                    <button class="btn-close" @onclick="FecharModal">✕</button>
+                </div>
+                <div class="modal-form">
+                    <div class="form-group">
+                        <label>NOME DA PEÇA</label>
+                        <input type="text" @bind="pecaModel.Nome" />
+                    </div>
+                    <div class="form-group">
+                        <label>CÓDIGO (Nota)</label>
+                        <input type="text" @bind="pecaModel.Nota" />
+                    </div>
+                    <div class="form-group" style="display:flex; gap:10px;">
+                        <div style="flex:1">
+                            <label>PREÇO (R$)</label>
+                            <input type="number" @bind="pecaModel.PrecoVenda" />
+                        </div>
+                        <div style="flex:1">
+                            <label>QTD ESTOQUE</label>
+                            <input type="number" @bind="pecaModel.QuantidadeEstoque" />
+                        </div>
+                    </div>
+                    <button class="btn-save" @onclick="Salvar">SALVAR ITEM</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <nav class="bottom-nav">
+        <div class="nav-item" @onclick='() => NavTo("dashboard")'><span>📊</span><span>Dashboard</span></div>
+        <div class="nav-item" @onclick='() => NavTo("clientes")'><span>👥</span><span>Clientes</span></div>
+        <div class="nav-item" @onclick='() => NavTo("veiculos")'><span>🚗</span><span>Veículos</span></div>
+        <div class="nav-item active"><span>⚙️</span><span>Peças</span></div>
+        <div class="nav-item" @onclick='() => NavTo("os")'><span>📋</span><span>OS</span></div>
+    </nav>
+</div>
+
+<style>
+
+    /* HEADER */
+    .top-bar {
+        background-color: #616161;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+    .brand-section { display: flex; align-items: center; gap: 10px; }
+    .brand-text { color: #FFD700; font-weight: bold; font-size: 1rem; }
+    .user-circle { background: #e0e0e0; width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #333; }
+    .notification-icon { color: white; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 0.9rem;}
+
+    .app-wrapper { background-color: #000; min-height: 100vh; color: white; font-family: sans-serif; display: flex; flex-direction: column; }
+    .top-bar { background-color: #616161; height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+    .content-body { padding: 20px; flex: 1; padding-bottom: 120px; }
+    
+    .inventory-stats { display: flex; gap: 10px; margin-bottom: 20px; }
+    .stat-box { background: white; color: black; flex: 1; padding: 15px; border-radius: 12px; }
+    .stat-box.warning { background: #FFFDE7; }
+    .stat-box h2 { font-size: 1.5rem; margin-top: 5px; }
+    .stat-box span { font-size: 0.7rem; color: #666; }
+
+    .btn-new-item { width: 100%; padding: 15px; background: #FFD700; border: none; border-radius: 15px; font-weight: bold; margin-bottom: 20px; cursor: pointer; }
+
+    .search-box { background: #FFFDE7; border-radius: 25px; padding: 10px 15px; display: flex; gap: 10px; margin-bottom: 20px; }
+    .search-box input { border: none; background: transparent; width: 100%; outline: none; }
+
+    .pecas-list { display: flex; flex-direction: column; gap: 15px; }
+    .peca-card { background: #70757a; border-radius: 15px; padding: 15px; position: relative; }
+    .peca-card.low-stock { border-left: 5px solid #ff5252; }
+    
+    .peca-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .nota { color: #FFD700; font-size: 0.7rem; font-weight: bold; }
+    .badge-status { background: #ff5252; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+    
+    .peca-info { display: flex; justify-content: space-between; margin: 10px 0; font-weight: bold; }
+    .progress-container { background: rgba(255,255,255,0.2); height: 6px; border-radius: 3px; overflow: hidden; }
+    .progress-bar { background: white; height: 100%; }
+    .low-stock .progress-bar { background: #ff5252; }
+
+    .card-actions { display: flex; justify-content: flex-end; gap: 15px; margin-top: 10px; }
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 1rem; }
+
+    /* Modal e Nav (Repetir padrões anteriores) */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: flex-end; z-index: 1000; }
+    .modal-content { background: #1e1e1e; width: 100%; border-radius: 25px 25px 0 0; padding: 25px; animation: slideUp 0.3s; }
+    @@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .btn-save { width: 100%; padding: 15px; background: #FFD700; border: none; border-radius: 15px; font-weight: bold; margin-top: 15px; }
+    .bottom-nav {
+        position: fixed;
+        bottom: 15px; left: 15px; right: 15px;
+        background-color: #333;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 40;
+    }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #999; font-size: 0.65rem; cursor: pointer; gap: 5px;}
+    .nav-item.active {
+        background-color: #FFFDE7;
+        color: #000;
+        padding: 10px 15px;
+        border-radius: 15px;
+        font-weight: bold;
+    }
+</style>
+
+@code {
+    private List<Peca> listaPecas = new();
+    private List<Peca> listaExibicao = new();
+    private Peca pecaModel = new();
+    private bool exibirModal = false;
+    private bool isEdicao = false;
+
+    protected override void OnInitialized() => AtualizarLista();
+
+    private void AtualizarLista() {
+        listaPecas = GaragemService.GetPecas();
+        listaExibicao = listaPecas;
+    }
+
+    private void AbrirModalNovo() {
+        isEdicao = false;
+        pecaModel = new Peca();
+        exibirModal = true;
+    }
+
+    private void PrepararEdicao(Peca p) {
+        isEdicao = true;
+        pecaModel = new Peca { Id = p.Id, Nome = p.Nome, Nota = p.Nota, PrecoVenda = p.PrecoVenda, QuantidadeEstoque = p.QuantidadeEstoque };
+        exibirModal = true;
+    }
+
+    private void Salvar() {
+        if (isEdicao) GaragemService.AtualizarPeca(pecaModel);
+        else GaragemService.AdicionarPeca(pecaModel);
+        AtualizarLista();
+        FecharModal();
+    }
+
+    private void Excluir(int id) {
+        GaragemService.ExcluirPeca(id);
+        AtualizarLista();
+    }
+
+    private void OnSearch(ChangeEventArgs e) {
+        var termo = e.Value?.ToString()?.ToLower() ?? "";
+        listaExibicao = listaPecas.Where(p => p.Nome.ToLower().Contains(termo) || p.Nota.ToLower().Contains(termo)).ToList();
+    }
+
+    private void FecharModal() => exibirModal = false;
+    private void NavTo(string path) => Navigation.NavigateTo(path);
+}

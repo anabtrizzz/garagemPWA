@@ -1,0 +1,108 @@
+﻿@page "/"
+@layout EmptyLayout
+@using Microsoft.AspNetCore.Components.Web
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<div class="app-container">
+    <header class="top-bar">
+        <div class="brand-section">
+            <div class="user-circle"><i class="bi bi-person-fill"></i></div>
+            <span class="brand-text">GARAGEM 75</span>
+        </div>
+        <div class="notification-icon"><i class="bi bi-bell-fill"></i></div>
+    </header>
+
+    <main class="login-main">
+        <div class="form-container">
+            <!-- Os campos continuam aqui para o visual -->
+            <input type="text" placeholder="USUÁRIO" class="custom-input" />
+            <input type="password" placeholder="SENHA" class="custom-input" />
+
+            <!-- O clique agora chama o método Direto -->
+            <button type="button" class="btn-entrar" @onclick="IrParaDashboard">
+                ENTRAR
+            </button>
+            
+            <p style="color: gray; font-size: 0.7rem; margin-top: 10px;">
+                (Modo de teste: clique em entrar para avançar)
+            </p>
+        </div>
+    </main>
+
+    <footer class="login-footer">
+        <p>ACESSO APENAS PARA ADMINISTRADORES</p>
+    </footer>
+</div>
+
+<style>
+    .app-container {
+        background-color: #000;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font-family: sans-serif;
+    }
+
+    .top-bar {
+        background-color: #616161;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+    }
+
+    .brand-text { color: #FFD700; font-weight: bold; }
+    .user-circle { background: #e0e0e0; width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+
+    .login-main {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .form-container {
+        width: 100%;
+        max-width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .custom-input {
+        width: 100%;
+        background-color: #FFFDE7;
+        border: none;
+        border-radius: 25px;
+        padding: 12px 20px;
+        font-weight: bold;
+    }
+
+    .btn-entrar {
+        background-color: #FFD700;
+        color: #000;
+        border: none;
+        border-radius: 25px;
+        padding: 12px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .login-footer {
+        padding: 30px;
+        text-align: center;
+        color: white;
+        font-size: 0.8rem;
+    }
+</style>
+
+@code {
+    private void IrParaDashboard()
+    {
+        // Navegação direta sem validação
+        Navigation.NavigateTo("/dashboard");
+    }
+}
