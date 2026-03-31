@@ -2,8 +2,9 @@
 
 Este é um sistema de gerenciamento de ordens de serviço desenvolvido com Blazor WebAssembly/Server, focado em dispositivos móveis. O projeto foi criado para facilitar o controle de fluxo de veículos, clientes e faturamento de uma oficina mecânica.
 
-🚀 **Funcionalidades Principais**
-Dashboard de Indicadores: Visualização em tempo real do faturamento total e do volume de ordens de serviço.
+## 🚀 **Funcionalidades Principais** 
+
+**Dashboard de Indicadores**: Visualização em tempo real do faturamento total e do volume de ordens de serviço.
 
 **Gestão de Fluxo**: Acompanhamento de O.S. através de barras de progresso categorizadas por status (Abertas, Em Execução, Finalizadas e Canceladas).
 
