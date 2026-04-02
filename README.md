@@ -30,4 +30,7 @@ Cálculo automático de valores e prazos de entrega.
 **Injeção de Dependência** para serviços de dados (GaragemService).
 
 ## **Demonstração do Layout**
-O sistema conta com um menu de navegação inferior estilo aplicativo, facilitando a alternância entre o Painel de Indicadores, Lista de Clientes e Gestão de O.S.
+O sistema conta com um menu de navegação inferior estilo aplicativo, facilitando a alternância entre o Painel de Indicadores, Lista de Clientes e Gestão de O.S. 
+
+## **Considerações Finais**
+O design final centraliza todos os pontos que a oficina precisa no cotidiano, facilitando a organização de uma grande equipe ou estruturando a oficina de um autonômo. A vantagem de ter um sistema versátil para mais de um dispositivo traz a possibilidade de melhora na qualidade do serviço prestado, armazenamento correto de informações e modernização para a empresa.  
