@@ -18,14 +18,14 @@ Atualização dinâmica de status diretamente no card da O.S;
 
 Cálculo automático de valores e prazos de entrega.
 
-**Interface Progressiva (PWA)**: Design responsivo e escuro (Dark Mode), otimizado para uso em smartphones por mecânicos e gestores;
+**Interface Progressiva (PWA)**: Design responsivo e escuro (Dark Mode), otimizado para uso em smartphones por mecânicos e gestores.
 
 ## 💻 **Tecnologias Utilizadas**
 **C# / .NET 8**
 
-**Blazor (Interactive Server/WASM)**
+**Blazor (Interactive Server/WASM)**;
 
-**CSS3** (Estilização personalizada com foco em UX mobile)
+**CSS3** (Estilização personalizada com foco em UX mobile);
 
 **Injeção de Dependência** para serviços de dados (GaragemService).
 
