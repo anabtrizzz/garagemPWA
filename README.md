@@ -1,6 +1,6 @@
 # 🛠️ Garagem 75 - Sistema de Gestão de Oficina (PWA)
 
-Este é um sistema de gerenciamento de ordens de serviço desenvolvido com **Blazor WebAssembly/Server**, focado em dispositivos móveis. O projeto foi criado para facilitar o controle de fluxo de veículos, estoque de peças, clientes e faturamento de uma oficina mecânica.
+Este é um sistema de gerenciamento interno desenvolvido com **Blazor WebAssembly/Server**, focado em dispositivos móveis. O projeto foi criado para facilitar o controle de fluxo de veículos, estoque de peças, clientes e faturamento de uma oficina mecânica.
 
 ## 🚀 **Funcionalidades Principais** 
 
@@ -30,7 +30,7 @@ Cálculo automático de valores e prazos de entrega.
 **Injeção de Dependência** para serviços de dados (GaragemService).
 
 ## **Demonstração do Layout**
-O sistema conta com um menu de navegação inferior estilo aplicativo, facilitando a alternância entre o **Painel de Indicadores**, **Lista de Clientes** e **Gestão de O.S**. 
+O sistema conta com um menu de navegação inferior estilo aplicativo, facilitando a alternância entre o **Painel de Indicadores**, **Lista de Clientes**, **Controle do Estoque** e **Gestão de O.S**. 
 
 ## **Considerações Finais**
-O design final centraliza todos os pontos que a oficina precisa no cotidiano, facilitando a organização de uma grande equipe ou estruturando a oficina de um autonômo. A vantagem de ter um sistema versátil para mais de um dispositivo traz a possibilidade de melhora na qualidade do serviço prestado, armazenamento correto de informações e modernização para a empresa.  
+O design final centraliza todos os pontos que a oficina precisa no cotidiano, facilitando a organização de uma grande equipe ou estruturando a oficina de um autonômo. A vantagem de ter um sistema versátil para mais de um dispositivo traz a possibilidade de melhora na qualidade do serviço prestado, armazenamento correto de informações e modernização para a empresa.
