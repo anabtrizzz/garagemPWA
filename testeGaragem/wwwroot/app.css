@@ -145,3 +145,295 @@ h1:focus {
     font-size: 1rem;
     margin-top: 10px;
 }
+
+
+/* --- LAYOUT BASE & CORES --- */
+:root {
+    --primary-yellow: #FFD700;
+    --bg-dark: #000000;
+    --card-bg: #1a1a1a;
+    --input-bg: #222222;
+    --text-main: #ffffff;
+    --text-muted: #aaaaaa;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+}
+
+.app-wrapper {
+    min-height: 100vh;
+    padding-bottom: 100px; /* Espaço para a nav inferior */
+}
+
+/* --- TOP BAR --- */
+.top-bar {
+    background-color: #333;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid #444;
+}
+
+.brand-text {
+    color: var(--primary-yellow);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* --- DASHBOARD & STATS --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 20px;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 15px;
+    border-left: 5px solid var(--primary-yellow);
+}
+
+    .stat-card.main {
+        background: var(--primary-yellow);
+        color: #000;
+        border: none;
+    }
+
+.os-grid-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 20px;
+}
+
+/* --- BARRAS DE PROGRESSO (DASHBOARD) --- */
+.progress-section {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 20px;
+    margin: 0 20px;
+}
+
+.progress-item {
+    margin-bottom: 20px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+}
+
+.progress-bar-container {
+    background: #333;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+    .progress-bar.yellow {
+        background-color: var(--primary-yellow);
+    }
+
+    .progress-bar.blue {
+        background-color: #007bff;
+    }
+
+    .progress-bar.green {
+        background-color: #28a745;
+    }
+
+    .progress-bar.red {
+        background-color: #dc3545;
+    }
+
+.dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+    .dot.yellow {
+        background: var(--primary-yellow);
+    }
+
+    .dot.blue {
+        background: #007bff;
+    }
+
+    .dot.green {
+        background: #28a745;
+    }
+
+    .dot.red {
+        background: #dc3545;
+    }
+
+/* --- CARDS DE ORDEM DE SERVIÇO --- */
+.os-list {
+    padding: 20px;
+}
+
+.os-card {
+    background: #262626;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid var(--primary-yellow);
+}
+
+.os-card-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.service-box {
+    background: rgba(255,255,255,0.05);
+    padding: 12px;
+    border-radius: 10px;
+    margin: 12px 0;
+}
+
+    .service-box small {
+        color: var(--primary-yellow);
+        font-weight: bold;
+        font-size: 0.65rem;
+    }
+
+.os-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #333;
+    padding-top: 12px;
+}
+
+/* --- SELETOR DE STATUS --- */
+.status-badge-select {
+    border: none;
+    border-radius: 12px;
+    padding: 6px 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    cursor: pointer;
+    appearance: none;
+    text-align: center;
+}
+
+    .status-badge-select.aberta {
+        background: var(--primary-yellow);
+        color: #000;
+    }
+
+    .status-badge-select.em-progresso {
+        background: #007bff;
+        color: #fff;
+    }
+
+    .status-badge-select.finalizada {
+        background: #28a745;
+        color: #fff;
+    }
+
+    .status-badge-select.cancelada {
+        background: #dc3545;
+        color: #fff;
+    }
+
+/* --- MODAL & FORMULÁRIOS --- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: flex-end;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #1a1a1a;
+    width: 100%;
+    padding: 25px;
+    border-radius: 25px 25px 0 0;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+    .form-group label {
+        display: block;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-bottom: 5px;
+    }
+
+input, select, textarea {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid #444;
+    border-radius: 10px;
+    color: white;
+    padding: 12px;
+}
+
+.btn-save {
+    background: var(--primary-yellow);
+    color: black;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* --- NAVEGAÇÃO INFERIOR --- */
+.bottom-nav {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
+    background: #222;
+    height: 70px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.nav-item {
+    text-align: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.65rem;
+    display: flex;
+    flex-direction: column;
+}
+
+    .nav-item.active {
+        background: #fff;
+        color: black;
+        padding: 10px 15px;
+        border-radius: 15px;
+    }
